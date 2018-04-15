@@ -1,0 +1,4 @@
+secrets.py
+__pycache__
+nyt_requests.json
+google_books.json
