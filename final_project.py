@@ -469,9 +469,10 @@ def update_relations_google_books():
     conn.commit()
     conn.close()
 
+## Function to Build Database from Scratch #####################################
 def get_data_build_database():
     #get date to use
-    published_date = input("Enter date(YYYY-MM-DD): ") #2016-05-19 #2018-03-11
+    published_date = input("Enter date(YYYY-MM-DD) for NYT bestsellers lists: ") #2016-05-19
     #make nyt_times request for date
     get_nyt_data(published_date)
     #create database and table
@@ -537,7 +538,7 @@ def process_command(command):
         else:
             for item in list_options:
                 if item in command:
-                    db_query += "WHERE ListName=" + "'" + item + "'" + " ORDER BY ListName "
+                    db_query += "WHERE ListName=" + "'" + item + "'" + " ORDER BY Subjects "
         # print(db_query)
         cur.execute(db_query)
         results = cur.fetchall()
@@ -550,11 +551,11 @@ def process_command(command):
         ON NYT.Id=GBD.Id
         """
         if 'All' in command:
-            db_query += "ORDER BY BookLength ASC "
+            db_query += "ORDER BY BookTitle ASC "
         else:
             for item in list_options:
                 if item in command:
-                    db_query += "WHERE ListName=" + "'" + item + "'" + " ORDER BY BookLength ASC "
+                    db_query += "WHERE ListName=" + "'" + item + "'" + " ORDER BY BookTitle ASC "
         # print(db_query)
         cur.execute(db_query)
         results = cur.fetchall()
@@ -584,19 +585,18 @@ def process_command(command):
         ON NYT.Id=GBD.Id
         """
         if 'All' in command:
-            db_query += "ORDER BY [Rank] Desc "
+            db_query += "ORDER BY [Rank] ASC "
         else:
             for item in list_options:
                 if item in command:
-                    db_query += "WHERE ListName=" + "'" + item + "'" + " ORDER BY [Rank] DESC "
+                    db_query += "WHERE ListName=" + "'" + item + "'" + " ORDER BY [Rank] ASC "
         # print(db_query)
         cur.execute(db_query)
         results = cur.fetchall()
 
     return results
 
-# process_command('All nyt_ranking')
-
+## Constructing Plotly Outputs #################################################
 def plotly_outputs(command):
     results = process_command(command)
     if 'ratings' in command:
@@ -705,31 +705,278 @@ def plotly_outputs(command):
 
     if 'genres' in command:
         if 'All' in command:
-            list_name_labels_values = []
+            list_name_labels_values = {}
+            list_name_labels = []
             list_name_values = []
+
+            for book in results:
+                list_name = book[0]
+                if list_name not in list_name_labels_values:
+                    list_name_labels_values[list_name] = 0
+                list_name_labels_values[list_name] += 1
+
+            for item in list_name_labels_values.keys():
+                list_name_labels.append(item)
+
+            for book in list_name_labels_values:
+                list_name_values.append(list_name_labels_values[book])
+
+            labels = list_name_labels
+            values = list_name_values
+
+            trace = go.Pie(labels=labels, values=values)
+
+            return py.plot([trace], filename='basic_pie_chart')
+
+        else:
+            chart_name = ''
+            for item in command.split()[:-1]:
+                chart_name += item + ' '
+
+            chart_title = 'Google Books subgenres for ' + chart_name + 'books on NYT Bestsellers List'
+
+            subject_names = []
+            subject_name_labels_values = {}
             subject_name_labels = []
             subject_name_values = []
 
             for book in results:
+                other_subject_names = book[3].split(',')
+                for subject in other_subject_names:
+                    subject_names.append(subject)
 
-                # list_name_labels_values.append()
-# ListName, BookTitle, BookAuthor, Subjects
-            # labels = ['Oxygen','Hydrogen','Carbon_Dioxide','Nitrogen']
-            # values = [4500,2500,1053,500]
-            #
-            # trace = go.Pie(labels=labels, values=values)
-            #
-            # py.iplot([trace], filename='basic_pie_chart')
-        else:
-            pass
+            for subject_name in subject_names:
+                if subject_name not in subject_name_labels_values:
+                    subject_name_labels_values[subject_name] = 0
+                subject_name_labels_values[subject_name] += 1
 
-plotly_outputs('All ratings')
+            for item in subject_name_labels_values.keys():
+                subject_name_labels.append(item)
 
+            for subject in subject_name_labels_values:
+                subject_name_values.append(subject_name_labels_values[subject])
+
+            fig = {
+              "data": [
+                {
+                  "values": subject_name_values,
+                  "labels": subject_name_labels,
+                  "domain": {"x": [0, .48]},
+                  "hole": .4,
+                  "type": "pie"
+                }],
+              "layout": {
+                    "title": chart_title,
+                    "annotations": [
+                        {
+                            "font": {
+                                "size": 20
+                            },
+                            "showarrow": False,
+                            "text": chart_name,
+                            "x": 0.20,
+                            "y": 0.5
+                        }
+                    ]
+                }
+            }
+
+            return py.plot(fig, filename='donut')
+
+    if 'length' in command:
+        book_title_author_x_axis = []
+        book_page_length_y_axis = []
+        hover_text_title_author_pages = []
+
+        for book in results:
+            book_title_author_x_axis.append(book[1][:25] + '... by: ' + book[2])
+            book_page_length_y_axis.append(book[3])
+            hover_text_title_author_pages.append(book[1][:25] + '... by: ' + book[2] + ' is ' + str(book[3]) + ' pgs. long.')
+
+        trace = go.Scatter(
+            x = book_title_author_x_axis,
+            y = book_page_length_y_axis,
+            text = hover_text_title_author_pages,
+            hoverinfo = 'text'
+        )
+
+        data = [trace]
+
+        layout = dict(title = "NYT Bestsellers Page Lengths",
+                      xaxis = dict(title = 'Book Title & Author'),
+                      yaxis = dict(title = 'Book Length (Pages)'),
+                      )
+
+        fig = dict(data=data, layout=layout)
+        return py.plot(fig, filename='styled-line')
+
+    if 'pub_year' in command:
+        x_axis_publisher = []
+        y_axis_year_pub = []
+        book_title_and_author = []
+
+        for book in results[:-1]:
+            book_title_and_author.append(book[1][:25] + '... by: ' + book[2])
+            x_axis_publisher.append(book[4])
+            y_axis_year_pub.append(book[3])
+
+        trace = go.Scatter(
+            x = x_axis_publisher,
+            y = y_axis_year_pub,
+            text = book_title_and_author,
+            hoverinfo = 'text',
+            mode = 'markers'
+        )
+
+        data = [trace]
+
+        layout = dict(title = 'NYT Bestsellers By Publisher & Year',
+          xaxis = dict(title = 'Publisher'),
+          yaxis = dict(title = 'Year Published'),
+          )
+
+        fig = dict(data=data, layout=layout)
+        return py.plot(fig, filename='basic-scatter')
+
+    if 'nyt_rankings' in command:
+        # if 'All' in command:
+        x_book_title_and_author = []
+        y_rank_now = []
+        y_rank_last_week = []
+        hover_text_weeks_on_list = []
+
+        for book in results:
+            x_book_title_and_author.append(book[1][:25] + '... by: ' + book[2])
+            y_rank_now.append(book[4])
+            y_rank_last_week.append(book[5])
+            hover_text_weeks_on_list.append(book[1][:20] + '... has been on the list for: ' + str(book[6]) + ' weeks.')
+
+        trace0 = go.Scatter(
+            x = x_book_title_and_author,
+            y = y_rank_now,
+            name = 'Current Rank',
+            text = hover_text_weeks_on_list,
+            hoverinfo = 'text',
+            mode = 'markers',
+            marker = dict(
+                size = 10,
+                color = 'rgba(152, 0, 0, .8)',
+                line = dict(
+                    width = 2,
+                    color = 'rgb(0, 0, 0)'
+                )
+            )
+        )
+
+        trace1 = go.Scatter(
+            x = x_book_title_and_author,
+            y = y_rank_last_week,
+            name = 'Rank Previous Week',
+            text = hover_text_weeks_on_list,
+            hoverinfo = 'text',
+            mode = 'markers',
+            marker = dict(
+                size = 10,
+                color = 'rgba(255, 182, 193, .9)',
+                line = dict(
+                    width = 2,
+                )
+            )
+        )
+
+        data = [trace0, trace1]
+
+        layout = dict(title = 'NYT Bestsellers Rankings<br>(Hover for more info)',
+                      yaxis = dict(zeroline = False),
+                      xaxis = dict(zeroline = False)
+                     )
+
+        fig = dict(data=data, layout=layout)
+        return py.plot(fig, filename='styled-scatter')
+
+# plotly_outputs('All length')
+
+## User Instructions ###########################################################
 def load_help_text():
-    pass
+    with open('help.txt') as f:
+        return f.read()
 
+## Putting it All Together: Interactivity ######################################
 def interactive_prompt():
-    pass
+    # Uncomment the following line to build database from scratch
+    # (the date I used is 2016-05-19):
+    # get_data_build_database()
+    help_text = load_help_text()
+    response = ''
+    while response != 'exit':
+        response = input('Enter a command: ')
 
-# if __name__ == "__main__":
-#     interactive_prompt()
+        if response == 'help':
+            print(help_text)
+            continue
+        elif response == 'exit':
+            print('Mischief Managed.')
+        else:
+            try:
+                raw_results = process_command(response)
+                if 'ratings' in response:
+                    print(("{:<16} {:<16} {:<16} {:<10} {:<10} {:<10}").format('ListName', 'BookTitle', 'BookAuthor', 'Rank', 'AvgRating', 'NumOfReviews'))
+                    for book in raw_results:
+                        print(("{:<16} {:<16} {:<16} {:<10} {:<10} {:<10}").format(book[0][:10] + '...', book[1][:10] + '...', book[2][:10] + '..', book[3], book[4], book[5]))
+
+                    plotly_command = input("Would you like to see a graph of this information? y/n: ")
+                    if plotly_command == 'y':
+                        plotly_outputs(response)
+                    else:
+                        continue
+
+                if 'genres' in response:
+                    print(("{:<16} {:<16} {:<16} {:<16}").format('ListName', 'BookTitle', 'BookAuthor', 'Subjects'))
+                    for book in raw_results:
+                        print(("{:<16} {:<16} {:<16} {:<16}").format(book[0][:10] + '...', book[1][:10] + '...', book[2][:10] + '..', book[3][:10] + '..'))
+
+                    plotly_command = input("Would you like to see a graph of this information? y/n: ")
+                    if plotly_command == 'y':
+                        plotly_outputs(response)
+                    else:
+                        continue
+
+                if 'length' in response:
+                    print(("{:<16} {:<16} {:<16} {:<16}").format('ListName', 'BookTitle', 'BookAuthor', 'Length(Pages)'))
+                    for book in raw_results:
+                        print(("{:<16} {:<16} {:<16} {:<16}").format(book[0][:10] + '...', book[1][:10] + '...', book[2][:10] + '..', book[3]))
+
+                    plotly_command = input("Would you like to see a graph of this information? y/n: ")
+                    if plotly_command == 'y':
+                        plotly_outputs(response)
+                    else:
+                        continue
+
+                if 'pub_year' in response:
+                    print(("{:<16} {:<16} {:<16} {:<10} {:<16} {:<10}").format('ListName', 'BookTitle', 'BookAuthor', 'PubYear', 'Publisher', 'WeeksOnList'))
+                    for book in raw_results:
+                        print(("{:<16} {:<16} {:<16} {:<10} {:<16} {:<10}").format(book[0][:10] + '...', book[1][:10] + '...', book[2][:10] + '..', book[3], book[4][:10] + '..', book[5]))
+
+                    plotly_command = input("Would you like to see a graph of this information? y/n: ")
+                    if plotly_command == 'y':
+                        plotly_outputs(response)
+                    else:
+                        continue
+
+                if 'nyt_rankings' in response:
+                    print(("{:<16} {:<16} {:<16} {:<10} {:<10} {:<10} {:<10}").format('ListName', 'BookTitle', 'BookAuthor', 'ListDate', 'Rank', 'RankLastWeek', 'WeeksOnList'))
+                    for book in raw_results:
+                        print(("{:<16} {:<16} {:<16} {:<10} {:<10} {:<10} {:<10}").format(book[0][:10] + '...', book[1][:10] + '...', book[2][:10] + '..', book[3], book[4], book[5], book[6]))
+
+                    plotly_command = input("Would you like to see a graph of this information? y/n: ")
+                    if plotly_command == 'y':
+                        plotly_outputs(response)
+                    else:
+                        continue
+
+            except:
+                print("Please enter a valid command. Enter 'help' at next prompt if you need assistance.")
+                continue
+
+if __name__ == "__main__":
+    interactive_prompt()

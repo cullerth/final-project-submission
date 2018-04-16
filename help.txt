@@ -1,0 +1,52 @@
+Commands available:
+
+****** MAIN COMMAND 1 ******
+All
+Description: Lists all New York Times bestselling books from every sub-list for the provided date.
+	Options:
+  * ratings | Description: Presents NYT bestsellers by their Google Books rating in descending order.
+
+  * genres | Description: Orders NYT bestsellers by sub-list alphabetically.
+
+  * length | Description: Presents NYT bestsellers ordered by page length in ascending order.
+
+  * pub_year | Description: Presents NYT bestsellers publication year and publisher ordered by publication year in ascending order.
+
+  * nyt_ranking | Description: Presents the NYT bestsellers list publication date, current rank, previous week's rank, and consecutive weeks on list ordered by rank in ascending order.
+
+****** MAIN COMMAND 2 ******
+Any item from the following list (case sensitive) -
+   ["Young Adult Paperback", "Young Adult Hardcover",
+    "Young Adult E-Book", "Travel", "Trade Fiction Paperback", "Sports",
+    "Series Books", "Science", "Religion Spirituality and Faith", "Relationships",
+    "Race and Civil Rights", "Picture Books", "Paperback Nonfiction",
+    "Paperback Graphic Books", "Mass Market Paperback", "Manga",
+    "Humor", "Health", "Hardcover Political Books", "Hardcover Nonfiction",
+    "Hardcover Graphic Books", "Hardcover Fiction", "Games and Activities",
+    "Food and Fitness", "Fashion Manners and Customs", "Family",
+    "Expeditions Disasters and Adventures", "Espionage", "Education",
+    "E-Book Nonfiction", "E-Book Fiction", "Culture", "Crime and Punishment",
+    "Combined Print and E-Book Fiction", "Combined Print and E-Book Nonfiction",
+    "Childrens Middle Grade Paperback", "Childrens Middle Grade Hardcover",
+    "Childrens Middle Grade E-Book", "Celebrities", "Business Books", "Animals",
+    "Advice How-To and Miscellaneous"]
+
+Description: Lists  New York Times bestselling books for the sub-list indicated for the provided date.
+
+Options:
+  * ratings | Description: Presents NYT bestsellers by their Google Books rating in descending order.
+
+  * genres | Description: Orders NYT bestsellers by sub-genres alphabetically.
+
+  * length | Description: Presents NYT bestsellers ordered by page length in ascending order.
+
+  * pub_year | Description: Presents NYT bestsellers publication year and publisher ordered by publication year in ascending order.
+
+  * nyt_ranking | Description: Presents the NYT bestsellers list publication date, current rank, previous week's rank, and consecutive weeks on list ordered by rank in ascending order.
+
+Sample Commands:
+  'Hardcover Graphic Books ratings'
+  'All genres'
+  'Childrens Middle Grade Paperback nyt_ranking'
+  'All length'
+  'Education pub_year'
