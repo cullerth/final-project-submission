@@ -13,14 +13,20 @@ google_books.json
 
 Visualizations for this program are handled through plotly. Information for getting started with plotly can be found here: https://plot.ly/python/getting-started/
 
-All other necessary modules are listed in the reequirements.txt file. 
+All other necessary modules are listed in the requirements.txt file. 
 
 The code is structured as follows: 
+
 	1. Caching for both the NYT API and scraped Google Books html is established 
+
 	2. The NYT requests funcion is defined, along with those functions needed to scrape from Google Books - including a Google Books class definition
+
 	3. Functions are defined to create the database using data from both sources - the get_data_build_database() function combining everything up to now
+
 	4. Data processing is handled in the process_command function
+
 	5. Plotly outputs are constructed via the plotly_outputs function
+
 	6. Everything is bundled together in the interactive_prompt function that allows for command line response from users
 
 ~~ User Guide ~~
