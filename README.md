@@ -40,7 +40,7 @@ The code is structured as follows:
 	* 'Childrens Middle Grade Paperback length'
 	* 'Science genres'
 	* 'Humor ratings'
-- Formatted data will print to the console first, with the option to see a plotly visualization prompted next. If 'y', a user will be redirected to the relevant plotly graph in the browser. If 'n', the program will proceed. 
+- Formatted data will print to the console first, with the option to see a plotly visualization prompted next. If 'y', a user will be redirected to the relevant plotly graph in the browser. If 'n', the program will proceed. Ratings are presented on a bar graph, genres on a pie chart, length on a line graph, pub_year on a scatter plot, and nyt_rankings on a scatterplot. 
 - Users can access help.txt by entering 'help' at any time. 
 
 
