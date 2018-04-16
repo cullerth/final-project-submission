@@ -7,8 +7,11 @@ Users will need a NYT API key to run the program. It is recommend that this key 
 This file should be included in a .gitignore, along with any other cache files produced that contain identifying information. The .gitignore for this program should look like this: 
 
 secrets.py
+
 __pycache__
+
 nyt_requests.json
+
 google_books.json
 
 Visualizations for this program are handled through plotly. Information for getting started with plotly can be found here: https://plot.ly/python/getting-started/
