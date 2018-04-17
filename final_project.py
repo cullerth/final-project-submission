@@ -7,7 +7,6 @@ from secrets import *
 import plotly.plotly as py
 import plotly.graph_objs as go
 
-# published_date = 2016-05-19
 ## NEW YORK TIMES CACHING ######################################################
 NYT_REQUESTS_CACHE = 'nyt_requests.json'
 try:
@@ -29,7 +28,7 @@ def params_unique_combination(baseurl, params):
 ## GOOGLE BOOKS CACHING ########################################################
 GOOGLE_BOOKS_CACHE = 'google_books.json'
 try:
-    google_cache = open(GOOGLE_BOOKS_CACHE, 'r')
+    google_cache = open(GOOGLE_BOOKS_CACHE, 'r', encoding="utf8")
     google_cache_contents = google_cache.read()
     GOOGLE_CACHE_DICT = json.loads(google_cache_contents)
     google_cache.close()
@@ -112,15 +111,8 @@ def get_isbn_nums(published_date): #pub date
 
     return isbn_nums #[0:22] #for testing purposes
 
-#element 23 doesnt work a tag
-
-# isbn_nums = get_isbn_nums()
-# print(len(isbn_nums)) #210
-
 def scrape_google_books_data(published_date): #pub date
     google_books = []
-
-
 
     for isbn in get_isbn_nums(published_date):
         try:
@@ -186,10 +178,18 @@ def scrape_google_books_data(published_date): #pub date
                                     subjects = table_cells[1].text.strip()
                                     subjects = subjects.replace(' / ', ', ')
                                     subjects = subjects.replace('›', ',')
+                                    subjects = subjects.split(',')[3:]
+                                    # subjects = subjects.replace(' ', '')
+                                    subgenres = ''
+                                    for item in subjects:
+                                        subgenres += item + ','
+                                    subgenres = subgenres[1:]
+
+
 
                             google_book = GoogleBook(title, author, avg_rtng,
                             num_reviews, description, publisher, published_year,
-                            isbn[2], length, subjects)
+                            isbn[2], length, subgenres[:-1])
                             google_books.append(google_book)
 
                     else:
@@ -232,11 +232,17 @@ def scrape_google_books_data(published_date): #pub date
                                 subjects = table_cells[1].text.strip()
                                 subjects = subjects.replace(' / ', ', ')
                                 subjects = subjects.replace('›', ',')
+                                subjects = subjects.split(',')[3:]
+                                # subjects = subjects.replace(' ', '')
+                                subgenres = ''
+                                for item in subjects:
+                                    subgenres += item + ','
+                                subgenres = subgenres[1:]
 
 
                         google_book = GoogleBook(title, author, avg_rtng,
                         num_reviews, description, publisher, published_year,
-                        isbn[2], length, subjects)
+                        isbn[2], length, subgenres[:-1])
                         google_books.append(google_book)
         except:
             baseurl = "https://www.google.com/search?tbm=bks&q="
@@ -302,10 +308,16 @@ def scrape_google_books_data(published_date): #pub date
                                     subjects = table_cells[1].text.strip()
                                     subjects = subjects.replace(' / ', ', ')
                                     subjects = subjects.replace('›', ',')
+                                    subjects = subjects.split(',')[3:]
+                                    # subjects = subjects.replace(' ', '')
+                                    subgenres = ''
+                                    for item in subjects:
+                                        subgenres += item + ','
+                                    subgenres = subgenres[1:]
 
                             google_book = GoogleBook(title, author, avg_rtng,
                             num_reviews, description, publisher, published_year,
-                            isbn[2], length, subjects)
+                            isbn[2], length, subgenres[:-1])
                             google_books.append(google_book)
 
                     else:
@@ -348,11 +360,16 @@ def scrape_google_books_data(published_date): #pub date
                                 subjects = table_cells[1].text.strip()
                                 subjects = subjects.replace(' / ', ', ')
                                 subjects = subjects.replace('›', ',')
-
+                                subjects = subjects.split(',')[3:]
+                                # subjects = subjects.replace(' ', '')
+                                subgenres = ''
+                                for item in subjects:
+                                    subgenres += item + ','
+                                subgenres = subgenres[1:]
 
                         google_book = GoogleBook(title, author, avg_rtng,
                         num_reviews, description, publisher, published_year,
-                        isbn[2], length, subjects)
+                        isbn[2], length, subgenres[:-1])
                         google_books.append(google_book)
 
     return google_books
@@ -483,8 +500,6 @@ def get_data_build_database():
     insert_google_books_data(published_date)
     #update google books table with relations
     update_relations_google_books()
-
-# get_data_build_database()
 
 ## Data Processing #############################################################
 def process_command(command):
@@ -802,7 +817,7 @@ def plotly_outputs(command):
 
         data = [trace]
 
-        layout = dict(title = "NYT Bestsellers Page Lengths",
+        layout = dict(title = "NYT Bestsellers Page Lengths<br>Hover for more info",
                       xaxis = dict(title = 'Book Title & Author'),
                       yaxis = dict(title = 'Book Length (Pages)'),
                       )
@@ -830,7 +845,7 @@ def plotly_outputs(command):
 
         data = [trace]
 
-        layout = dict(title = 'NYT Bestsellers By Publisher & Year',
+        layout = dict(title = 'NYT Bestsellers By Publisher & Year<br>Hover for book titles & authors',
           xaxis = dict(title = 'Publisher'),
           yaxis = dict(title = 'Year Published'),
           )
@@ -893,8 +908,6 @@ def plotly_outputs(command):
 
         fig = dict(data=data, layout=layout)
         return py.plot(fig, filename='styled-scatter')
-
-# plotly_outputs('All length')
 
 ## User Instructions ###########################################################
 def load_help_text():
