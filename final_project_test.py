@@ -86,7 +86,7 @@ class TestAllSearch(unittest.TestCase):
 
 class TestListNameSearch(unittest.TestCase):
 
-    def test_company_search(self):
+    def test_listname_search(self):
         results = process_command('Business Books ratings')
         self.assertIn('Shoe Dog', results[1][1])
 
